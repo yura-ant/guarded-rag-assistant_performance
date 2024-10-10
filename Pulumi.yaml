@@ -1,0 +1,16 @@
+name: docsassist
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: .venv
+    # typechecker: mypy
+description: Docsassist
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: python
+# plugins:
+#   providers:
+#     - name: datarobot
+#       path: ../pulumi-testing/pulumi-datarobot/bin/
