@@ -6,6 +6,7 @@
 # Released under the terms of DataRobot Tool and Utility Agreement.
 
 import os
+import subprocess
 
 import pulumi
 
@@ -29,6 +30,14 @@ def get_stack() -> str:
     try:
         return os.environ["PULUMI_STACK_CONTEXT"]
     except KeyError:
+        pass
+    try:
+        return subprocess.check_output(
+            ["pulumi", "stack", "--show-name", "--non-interactive"],
+            text=True,
+            stderr=subprocess.STDOUT,
+        ).strip()
+    except subprocess.CalledProcessError:
         pass
     raise ValueError(
         (

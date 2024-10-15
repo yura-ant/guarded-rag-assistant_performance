@@ -83,13 +83,11 @@ runtime_environment_moderations = GlobalRuntimeEnvironment.PYTHON_311_MODERATION
 default_prediction_server_id: Optional[str] = None
 
 prediction_environment_args = PredictionEnvironmentArgs(
-    resource_name="prediction-environment",
-    name=f"DocsAssist Prediction Environment [{project_name}]",
+    resource_name=f"Guarded RAG Prediction Environment [{project_name}]",
     platform=GlobalPredictionEnvironmentPlatforms.DATAROBOT_SERVERLESS,
 ).model_dump(mode="json", exclude_none=True)
 
 use_case_args = UseCaseArgs(
-    resource_name="use-case",
-    name="DocsAssist Use Case",
-    description="Use case for DocsAssist application",
+    resource_name=f"Guarded RAG Use Case [{project_name}]",
+    description="Use case for Guarded RAG Assistant application",
 ).model_dump(exclude_none=True)

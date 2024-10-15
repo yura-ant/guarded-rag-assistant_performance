@@ -10,7 +10,11 @@ import pathlib
 import pulumi
 import pulumi_datarobot as datarobot
 
-from docsassist.deployments import grading_deployment_env_name, rag_deployment_env_name
+from docsassist.deployments import (
+    grading_deployment_env_name,
+    rag_deployment_env_name,
+    app_env_name,
+)
 from infra import (
     settings_app_infra,
     settings_grader,
@@ -31,10 +35,10 @@ check_feature_flags(pathlib.Path("infra/feature_flag_requirements.yaml"))
 
 if "DATAROBOT_DEFAULT_USE_CASE" in os.environ:
     use_case_id = os.environ["DATAROBOT_DEFAULT_USE_CASE"]
-    pulumi.info(f"Using existing usecase {use_case_id}")
+    pulumi.info(f"Using existing use case '{use_case_id}'")
     use_case = datarobot.UseCase.get(
         id=use_case_id,
-        resource_name="use-case-pre-existing",
+        resource_name="Guarded RAG Use Case [PRE-EXISTING]",
     )
 else:
     use_case = datarobot.UseCase(**settings_main.use_case_args)
@@ -45,19 +49,19 @@ if settings_main.default_prediction_server_id is None:
     )
 else:
     prediction_environment = datarobot.PredictionEnvironment.get(
-        "prediction-environment-pre-existing",
+        "Guarded RAG Prediction Environment [PRE-EXISTING]",
         settings_main.default_prediction_server_id,
     )
 
 
 llm_credential = DRCredential(
-    resource_name="llm-credential",
+    resource_name=f"Generic LLM Credential [{settings_main.project_name}]",
     credential=credential,
     credential_args=credential_args,
 )
 
 keyword_guard_deployment = CustomModelDeployment(
-    resource_name="keyword-guard",
+    resource_name=f"Keyword Guard [{settings_main.project_name}]",
     custom_model_args=settings_keyword_guard.custom_model_args,
     registered_model_args=settings_keyword_guard.registered_model_args,
     prediction_environment=prediction_environment,
@@ -95,7 +99,7 @@ guard_configurations = [
 
 if settings_main.core.rag_type == settings_main.RAGType.DR:
     rag_custom_model = RAGCustomModel(
-        resource_name="rag-prep",
+        resource_name=f"Guarded RAG Prep [{settings_main.project_name}]",
         use_case=use_case,
         dataset_args=settings_rag.dataset_args,
         playground_args=settings_rag.playground_args,
@@ -113,7 +117,7 @@ elif settings_main.core.rag_type == settings_main.RAGType.DIY:
         run_notebook(settings_rag.diy_rag_nb)
     else:
         pulumi.info(
-            f"Using existing doc chunking + vdb outputs in '{settings_rag.diy_rag_deployment_path}'"
+            f"Using existing outputs from build_rag.ipynb in '{settings_rag.diy_rag_deployment_path}'"
         )
 
     rag_custom_model = datarobot.CustomModel(  # type: ignore[assignment]
@@ -128,7 +132,7 @@ else:
     raise NotImplementedError(f"Unknown RAG type: {settings_main.core.rag_type}")
 
 rag_deployment = CustomModelDeployment(
-    resource_name="rag",
+    resource_name=f"Guarded RAG Deploy [{settings_main.project_name}]",
     custom_model_version_id=rag_custom_model.version_id,
     registered_model_args=settings_rag.registered_model_args,
     prediction_environment=prediction_environment,
@@ -136,7 +140,7 @@ rag_deployment = CustomModelDeployment(
 )
 
 grading_deployment = CustomModelDeployment(
-    resource_name="grading",
+    resource_name=f"Grading [{settings_main.project_name}]",
     custom_model_args=settings_grader.custom_model_args,
     registered_model_args=settings_grader.registered_model_args,
     prediction_environment=prediction_environment,
@@ -159,14 +163,14 @@ if settings_main.core.application_type == settings_main.ApplicationType.DIY:
     )
     qa_application = datarobot.CustomApplication(
         resource_name=settings_app_infra.app_resource_name,
-        name=settings_app_infra.app_name,
         source_version_id=application_source.version_id,
     )
 elif settings_main.core.application_type == settings_main.ApplicationType.DR:
     qa_application = datarobot.QaApplication(  # type: ignore[assignment]
         resource_name=settings_app_infra.app_resource_name,
-        name=settings_app_infra.app_name,
+        name="Guarded RAG Assistant",
         deployment_id=rag_deployment.deployment_id,
+        opts=pulumi.ResourceOptions(delete_before_replace=True),
     )
 else:
     raise NotImplementedError(
@@ -178,20 +182,21 @@ qa_application.id.apply(settings_app_infra.ensure_app_settings)
 
 pulumi.export(grading_deployment_env_name, grading_deployment.id)
 pulumi.export(rag_deployment_env_name, rag_deployment.id)
+pulumi.export(app_env_name, qa_application.id)
 for deployment, config in zip(global_guard_deployments, global_guardrails):
     pulumi.export(
-        config.deployment_args.resource_name + "-url",
+        config.deployment_args.resource_name,
         deployment.id.apply(get_deployment_url),
     )
 pulumi.export(
-    settings_grader.deployment_args.resource_name + "-url",
+    settings_grader.deployment_args.resource_name,
     grading_deployment.id.apply(get_deployment_url),
 )
 pulumi.export(
-    settings_rag.deployment_args.resource_name + "-url",
+    settings_rag.deployment_args.resource_name,
     rag_deployment.id.apply(get_deployment_url),
 )
 pulumi.export(
-    settings_app_infra.app_resource_name + "-url",
+    settings_app_infra.app_resource_name,
     qa_application.application_url,
 )

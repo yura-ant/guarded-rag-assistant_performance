@@ -48,8 +48,7 @@ class DRCredential(pulumi.ComponentResource):
         elif isinstance(self.credential_raw, GoogleLLMCredentials):
             self.credential = datarobot.GoogleCloudCredential(
                 **credential_args.model_dump(),
-                # TODO: update & test once declarative api support arrives
-                gcp_key=credential.service_account_key,  # type: ignore[union-attr]
+                gcp_key=json.dumps(credential.service_account_key),  # type: ignore[union-attr]
                 opts=pulumi.ResourceOptions(parent=self),
             )
         else:

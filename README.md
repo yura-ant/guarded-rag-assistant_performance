@@ -70,6 +70,32 @@ improvements can be merged in the future.
 
 [corp-policies]: https://s3.amazonaws.com/datarobot_public_datasets/ai_accelerators/acme_corp_company_policies_source_business_victoria_templates.zip
 
+### Change the LLM (e.g. Google Gemini)
+1. Modify your `.env`
+   ```
+   GOOGLE_SERVICE_ACCOUNT=''  # insert json service key between the single quotes, newlines are OK
+   GOOGLE_REGION=...  # default is 'us-west1'
+   ```
+2. Update your environment and install `google-auth`
+   ```
+   source set_env.sh
+   pip install google-auth
+   ```
+3. Update the credential type to be provisioned in `infra/settings_llm_credential.py`
+   ```
+   # credential = AzureOpenAICredentials()
+   # credential.test()
+   from docsassist.credentials import GoogleLLMCredentials
+   credential = GoogleLLMCredentials()
+   credential.test('gemini-1.5-flash-001')  # select a model for validating the credential
+   ```
+4. Configure a Gemini blueprint to be provisioned in `infra/settings_rag.py`
+   ```
+   # llm_id=GlobalLLM.AZURE_OPENAI_GPT_3_5_TURBO,
+   llm_id=GlobalLLM.GOOGLE_GEMINI_1_5_FLASH,
+   ```
+5. Run `pulumi up` to update your stack
+   
 ### Fully custom frontend
 1. Edit `infra/settings_main.py` and update `application_type` to `ApplicationType.DIY`
 2. Run `pulumi up` to update your stack with the example custom streamlit frontend
@@ -86,7 +112,7 @@ improvements can be merged in the future.
 2. Edit `infra/settings_main.py` and update `rag_type` to `RAGType.DIY`
 3. Run `pulumi up` to update your stack with the example custom RAG logic
 4. - Edit `data_science/build_rag.ipynb` to customize the doc chunking, vectorization logic.
-   - Edit `deployment_diy_rag/custom.py` to customize the retrieval logic
+   - Edit `deployment_diy_rag/custom.py` to customize the retrieval logic & LLM call.
    - Run `pulumi up` to update your stack
 
 

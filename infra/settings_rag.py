@@ -6,6 +6,7 @@
 # Released under the terms of DataRobot Tool and Utility Agreement.
 from __future__ import annotations
 
+import pulumi
 import pathlib
 import textwrap
 
@@ -36,23 +37,24 @@ from .settings_main import (
     runtime_environment_moderations,
 )
 
+
 custom_model_args = CustomModelArgs(
-    resource_name="rag-custom-model",
-    name="RAG Custom Model",
+    resource_name=f"Guarded RAG Custom Model [{project_name}]",
+    name="Guarded RAG Assistant",  # built-in QA app uses this as the AI's name
     base_environment_id=runtime_environment_moderations.id,
     target_name="completion",
     target_type=dr.enums.TARGET_TYPE.TEXT_GENERATION,
+    opts=pulumi.ResourceOptions(delete_before_replace=True),
 )
 
 registered_model_args = RegisteredModelArgs(
-    resource_name="rag-registered-model",
-    name=f"RAG Registered Model [{project_name}]",
+    resource_name=f"Guarded RAG Registered Model [{project_name}]",
 )
 
 
 deployment_args = DeploymentArgs(
-    resource_name="rag-deployment",
-    label="RAG Deployment",
+    resource_name=f"Guarded RAG Deployment [{project_name}]",
+    label=f"Guarded RAG Deployment [{project_name}]",
     association_id_settings=datarobot.DeploymentAssociationIdSettingsArgs(
         column_names=["association_id"],
         auto_generate_id=False,
@@ -71,17 +73,15 @@ deployment_args = DeploymentArgs(
 if core.rag_type == RAGType.DR:
     # if providing DIY RAG logic, these settings are N/A
     playground_args = PlaygroundArgs(
-        resource_name="rag-playground", name="RAG Playground"
+        resource_name=f"Guarded RAG Playground [{project_name}]",
     )
 
     dataset_args = DatasetArgs(
-        resource_name="rag-dataset",
-        name="RAG Dataset",
+        resource_name=f"Guarded RAG Documents Dataset [{project_name}]",
         file_path=core.rag_documents,
     )
     vector_database_args = VectorDatabaseArgs(
-        resource_name="rag-vector-database",
-        name="RAG Vector Database",
+        resource_name=f"Guarded RAG Vector DB [{project_name}]",
         chunking_parameters=ChunkingParameters(
             embedding_model=dr.enums.VectorDatabaseEmbeddingModel.JINA_EMBEDDING_T_EN_V1,
             chunk_size=512,
@@ -90,8 +90,7 @@ if core.rag_type == RAGType.DR:
     )
 
     llm_blueprint_args = LLMBlueprintArgs(
-        resource_name="rag-llm-blueprint",
-        name="RAG LLM Blueprint",
+        resource_name=f"Guarded RAG LLM Blueprint [{project_name}]",
         llm_id=GlobalLLM.AZURE_OPENAI_GPT_3_5_TURBO,
         llm_settings=LLMSettings(
             max_completion_length=512,

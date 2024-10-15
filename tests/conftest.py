@@ -36,6 +36,7 @@ def pytest_addoption(parser):
 @pytest.fixture(params=["dr-dr", "dr-diy", "diy-dr", "diy-diy"], scope="session")
 def mode(request, pytestconfig):
     if pytestconfig.getoption("pulumi_up") is False:
+        os.environ["PULUMI_STACK_CONTEXT"] = "TEST_MOCK_STACK"
         from infra.settings_main import core
 
         app_type = core.application_type

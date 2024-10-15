@@ -34,8 +34,7 @@ keyword_guard_positive_class_label = "true"
 keyword_guard_negative_class_label = "false"
 
 custom_model_args = CustomModelArgs(
-    resource_name="keyword-guard-model",
-    name="Keyword Guard Model",
+    resource_name=f"Keyword Guard Custom Model [{project_name}]",
     description="This model is designed to guard against questions about competitors",
     base_environment_id=runtime_environment_moderations.id,
     target_name=keyword_guard_target_name,
@@ -72,13 +71,12 @@ custom_model_args = CustomModelArgs(
 )
 
 registered_model_args = RegisteredModelArgs(
-    resource_name="keyword-guard-registered-model",
-    name=f"Keyword Guard Registered Model [{project_name}]",
+    resource_name=f"Keyword Guard Registered Model [{project_name}]",
 )
 
 deployment_args = DeploymentArgs(
-    resource_name="keyword-guard-deployment",
-    label="Keyword Guard Deployment",
+    resource_name=f"Keyword Guard Deployment [{project_name}]",
+    label=f"Keyword Guard Deployment [{project_name}]",
     predictions_settings=None
     if default_prediction_server_id
     else datarobot.DeploymentPredictionsSettingsArgs(
@@ -88,7 +86,7 @@ deployment_args = DeploymentArgs(
 
 custom_model_guard_configuration_args = CustomModelGuardConfigurationArgs(
     template_name=GlobalGuardrailTemplateName.CUSTOM_DEPLOYMENT,
-    name="Keyword Guard Configuration",
+    name=f"Keyword Guard Configuration [{project_name}]",
     stages=[Stage.PROMPT],
     intervention=Intervention(
         action=ModerationAction.BLOCK,

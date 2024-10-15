@@ -78,6 +78,7 @@ class DynamicSettings(BaseSettings):
 
 rag_deployment_env_name: str = "RAG_DEPLOYMENT_ID"
 grading_deployment_env_name: str = "GRADING_DEPLOYMENT_ID"
+app_env_name: str = "DATAROBOT_APPLICATION_ID"
 
 
 class RAGDeployment(DynamicSettings):

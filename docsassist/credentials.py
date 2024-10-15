@@ -6,11 +6,12 @@
 # Released under the terms of DataRobot Tool and Utility Agreement.
 from __future__ import annotations
 
+
 from pydantic import AliasChoices, AliasPath, Field
 from pydantic_settings import (
     BaseSettings,
 )
-from typing import Union, Optional
+from typing import Union, Optional, Dict, Any
 
 
 class AzureOpenAICredentials(BaseSettings):
@@ -62,7 +63,7 @@ class AzureOpenAICredentials(BaseSettings):
 
 
 class GoogleLLMCredentials(BaseSettings):
-    service_account_key: str = Field(
+    service_account_key: Dict[str, Any] = Field(
         validation_alias=AliasChoices(
             AliasPath(
                 "MLOPS_RUNTIME_PARAM_GOOGLE_SERVICE_ACCOUNT", "payload", "gcpKey"
@@ -75,10 +76,35 @@ class GoogleLLMCredentials(BaseSettings):
             AliasPath("MLOPS_RUNTIME_PARAM_GOOGLE_REGION", "payload"),
             "GOOGLE_REGION",
         ),
-        default=None,
+        default="us-west1",
     )
 
+    def test(self, model: str) -> None:
+        try:
+            from google.oauth2 import service_account
+            from google.auth.transport.requests import Request
+            import requests  # type: ignore
 
-# TODO: add google credential test once credential is supported by declarative API
+            credentials = service_account.Credentials.from_service_account_info(
+                self.service_account_key,
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+            )
+            credentials.refresh(Request())
+
+            messages = [{"role": "user", "parts": [{"text": "Hello"}]}]
+            resp = requests.post(
+                f"https://{self.region}-aiplatform.googleapis.com/v1/projects/"
+                f"{credentials.project_id}/locations/{self.region}/publishers/"
+                f"google/models/{model}:generateContent",
+                headers={"Authorization": f"Bearer {credentials.token}"},
+                json={"contents": messages},
+            )
+            resp.raise_for_status()
+        except Exception as e:
+            raise ValueError(
+                f"Unable to run a successful test completion against model '{model}' "
+                "with provided Azure OpenAI credentials. Please validate your credentials."
+            ) from e
+
 
 LLMCredentials = Union[AzureOpenAICredentials, GoogleLLMCredentials]

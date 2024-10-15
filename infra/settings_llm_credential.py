@@ -22,6 +22,5 @@ except ValidationError as e:
     ) from e
 
 credential_args = CredentialArgs(
-    resource_name="llm-specific-credential",
-    name=f"LLM Credential [{project_name}]",
+    resource_name=f"Guarded RAG LLM Credential [{project_name}]",
 )

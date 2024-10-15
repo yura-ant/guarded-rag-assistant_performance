@@ -70,7 +70,7 @@ class GuardrailTemplate(BaseModel):
 class CustomModelArgs(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     resource_name: str
-    name: str
+    name: str | None = None
     description: str | None = None
     base_environment_id: str
     base_environment_version_id: str | None = None
@@ -88,7 +88,7 @@ class CustomModelArgs(BaseModel):
 
 class RegisteredModelArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
 
 
 class DeploymentArgs(BaseModel):
@@ -138,7 +138,7 @@ class CustomModelGuardConfigurationArgs(BaseModel):
 
 class PlaygroundArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
 
 
 class LLMSettings(BaseModel):
@@ -153,7 +153,7 @@ class VectorDatabaseSettings(BaseModel):
 
 class LLMBlueprintArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
     llm_settings: LLMSettings
     llm_id: GlobalLLM
     vector_database_settings: VectorDatabaseSettings
@@ -169,33 +169,33 @@ class ChunkingParameters(BaseModel):
 
 class VectorDatabaseArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
     chunking_parameters: ChunkingParameters
 
 
 class DatasetArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
     file_path: str
 
 
 class UseCaseArgs(BaseModel):
     resource_name: str
-    name: str
-    description: str | None
+    name: str | None = None
+    description: str | None = None
     opts: Optional[pulumi.ResourceOptions] = None
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class PredictionEnvironmentArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
     platform: GlobalPredictionEnvironmentPlatforms
 
 
 class CredentialArgs(BaseModel):
     resource_name: str
-    name: str
+    name: str | None = None
 
 
 class QaApplicationArgs(BaseModel):

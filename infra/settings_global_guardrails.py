@@ -21,21 +21,19 @@ from .common.schema import (
     ModerationAction,
     Stage,
 )
-from .settings_main import default_prediction_server_id
+from .settings_main import default_prediction_server_id, project_name
 
 
 class GlobalGuardrail(BaseModel):
-    name: str
     deployment_args: DeploymentArgs
     registered_model_name: GlobalRegisteredModelName
     custom_model_guard_configuration_args: CustomModelGuardConfigurationArgs
 
 
 toxicity = GlobalGuardrail(
-    name="toxicity-guard",
     deployment_args=DeploymentArgs(
-        resource_name="toxicity-guard-deployment",
-        label="Toxicity Guard Deployment",
+        resource_name=f"Toxicity Guard Deployment [{project_name}]",
+        label=f"Toxicity Guard [{project_name}]",
         predictions_settings=None
         if default_prediction_server_id
         else datarobot.DeploymentPredictionsSettingsArgs(
@@ -44,7 +42,7 @@ toxicity = GlobalGuardrail(
     ),
     registered_model_name=GlobalRegisteredModelName.TOXICITY,
     custom_model_guard_configuration_args=CustomModelGuardConfigurationArgs(
-        name="Toxicity Guard Configuration",
+        name=f"Toxicity Guard Configuration [{project_name}]",
         template_name=GlobalGuardrailTemplateName.TOXICITY,
         stages=[Stage.PROMPT],
         intervention=Intervention(
@@ -59,10 +57,9 @@ toxicity = GlobalGuardrail(
 )
 
 prompt_injection = GlobalGuardrail(
-    name="prompt-injection-guard",
     deployment_args=DeploymentArgs(
-        resource_name="prompt-injection-guard-deployment",
-        label="Prompt Injection Guard Deployment",
+        resource_name=f"Prompt Injection Guard Deployment [{project_name}]",
+        label=f"Prompt Injection Guard [{project_name}]",
         predictions_settings=None
         if default_prediction_server_id
         else datarobot.DeploymentPredictionsSettingsArgs(
@@ -71,7 +68,7 @@ prompt_injection = GlobalGuardrail(
     ),
     registered_model_name=GlobalRegisteredModelName.PROMPT_INJECTION,
     custom_model_guard_configuration_args=CustomModelGuardConfigurationArgs(
-        name="Prompt Injection Guard Configuration",
+        name=f"Prompt Injection Guard Configuration [{project_name}]",
         template_name=GlobalGuardrailTemplateName.PROMPT_INJECTION,
         stages=[Stage.PROMPT],
         intervention=Intervention(

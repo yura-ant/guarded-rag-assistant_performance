@@ -1,11 +1,11 @@
-name: docsassist
+name: guarded-rag-assistant
 runtime:
   name: python
   options:
     toolchain: pip
     virtualenv: .venv
     # typechecker: mypy
-description: Docsassist
+description: Guarded Rag Assistant
 config:
   pulumi:tags:
     value:

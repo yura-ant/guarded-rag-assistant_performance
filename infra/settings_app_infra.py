@@ -24,9 +24,8 @@ def ensure_app_settings(app_id: str) -> None:
 _application_path = Path("frontend/")
 
 app_source_args = ApplicationSourceArgs(
-    resource_name="qa-app-source",
+    resource_name=f"Guarded RAG App Source [{project_name}]",
     base_environment_id=GlobalRuntimeEnvironment.PYTHON_39_STREAMLIT.value.id,
-    name=f"QA Application Source [{project_name}]",
     files=[
         (str(f), str(f.relative_to(_application_path)))
         for f in _application_path.glob("**/*")
@@ -40,5 +39,4 @@ app_source_args = ApplicationSourceArgs(
     ],
 ).model_dump(mode="json", exclude_none=True)
 
-app_resource_name: str = "qa-app"
-app_name: str = f"QA Application [{project_name}]"
+app_resource_name: str = f"Guarded RAG Application [{project_name}]"
