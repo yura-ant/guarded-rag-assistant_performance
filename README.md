@@ -60,12 +60,13 @@ with the code below:
 
 ```
 curl -fsSL https://get.pulumi.com | sh
-pulumi login --local
 ```
 
 Restart your terminal.
 
 ```
+pulumi login --local
+
 source set_env.sh
 # on Windows: set_env.bat or Set-Env.ps1
 ```
