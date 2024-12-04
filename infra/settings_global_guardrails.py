@@ -47,7 +47,7 @@ toxicity = GlobalGuardrail(
             None
             if default_prediction_server_id
             else datarobot.DeploymentPredictionsSettingsArgs(
-                min_computes=0, max_computes=1, real_time=True
+                min_computes=0, max_computes=1
             )
         ),
     ),
@@ -77,7 +77,7 @@ prompt_injection = GlobalGuardrail(
             None
             if default_prediction_server_id
             else datarobot.DeploymentPredictionsSettingsArgs(
-                min_computes=0, max_computes=1, real_time=True
+                min_computes=0, max_computes=1
             )
         ),
     ),

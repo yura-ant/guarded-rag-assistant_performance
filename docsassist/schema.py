@@ -16,11 +16,28 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any, Dict, List, Literal, Optional, get_args
+from enum import Enum
+from typing import Any, Dict, List, Literal, Optional, Tuple, Type, get_args
 
 import pandas as pd
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
+
+
+class RAGType(str, Enum):
+    DIY = "diy"
+    DR = "dr"
+
+
+class ApplicationType(str, Enum):
+    DIY = "diy"
+    DR = "dr"
+
 
 Grade = Literal["Correct", "Incorrect", "Incomplete", "Digress", "No Answer"]
 
@@ -176,3 +193,36 @@ class GraderOutput(BaseModel):
 
     class Config:
         extra = "ignore"
+
+
+class CoreSettings(BaseSettings):
+    """Schema for core settings that can also be overridden by environment variables
+
+    e.g. for running automated tests.
+    """
+
+    rag_documents: str = Field(
+        description="Local path to zip file of pdf, txt, docx, md files to use with RAG",
+    )
+    rag_type: RAGType = Field(
+        description="Whether to use DR RAG chunking, vectorization, retrieval, or user-provided (DIY)",
+    )
+    application_type: ApplicationType = Field(
+        description="Whether to use the default DR QA frontend or a user-provided frontend (DIY)",
+    )
+
+    model_config = SettingsConfigDict(env_prefix="MAIN_", case_sensitive=False)
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            env_settings,
+            init_settings,
+        )

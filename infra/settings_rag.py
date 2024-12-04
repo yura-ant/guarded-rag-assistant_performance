@@ -24,7 +24,7 @@ from jinja2 import BaseLoader, Environment
 from pydantic import BaseModel
 
 from docsassist.i18n import gettext
-from docsassist.schema import TARGET_COLUMN_NAME, RAGModelSettings
+from docsassist.schema import TARGET_COLUMN_NAME, RAGModelSettings, RAGType
 
 from .common.globals import GlobalLLM
 from .common.schema import (
@@ -40,7 +40,6 @@ from .common.schema import (
     VectorDatabaseSettings,
 )
 from .settings_main import (
-    RAGType,
     core,
     default_prediction_server_id,
     project_name,
@@ -72,9 +71,7 @@ deployment_args = DeploymentArgs(
     predictions_settings=(
         None
         if default_prediction_server_id
-        else datarobot.DeploymentPredictionsSettingsArgs(
-            min_computes=0, max_computes=1, real_time=True
-        )
+        else datarobot.DeploymentPredictionsSettingsArgs(min_computes=0, max_computes=1)
     ),
     predictions_data_collection_settings=datarobot.DeploymentPredictionsDataCollectionSettingsArgs(
         enabled=True,

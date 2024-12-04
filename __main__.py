@@ -24,6 +24,7 @@ from docsassist.deployments import (
     rag_deployment_env_name,
 )
 from docsassist.i18n import LocaleSettings
+from docsassist.schema import ApplicationType, RAGType
 from infra import (
     settings_app_infra,
     settings_grader,
@@ -108,7 +109,7 @@ guard_configurations = [
     )
 ]
 
-if settings_main.core.rag_type == settings_main.RAGType.DR:
+if settings_main.core.rag_type == RAGType.DR:
     rag_custom_model = RAGCustomModel(
         resource_name=f"Guarded RAG Prep [{settings_main.project_name}]",
         use_case=use_case,
@@ -120,7 +121,7 @@ if settings_main.core.rag_type == settings_main.RAGType.DR:
         guard_configurations=guard_configurations,
         custom_model_args=settings_rag.custom_model_args,
     )
-elif settings_main.core.rag_type == settings_main.RAGType.DIY:
+elif settings_main.core.rag_type == RAGType.DIY:
     if not all(
         [path.exists() for path in settings_rag.diy_rag_nb_output.model_dump().values()]
     ):
@@ -171,7 +172,7 @@ app_runtime_parameters = [
     ),
 ]
 
-if settings_main.core.application_type == settings_main.ApplicationType.DIY:
+if settings_main.core.application_type == ApplicationType.DIY:
     application_source = datarobot.ApplicationSource(
         runtime_parameter_values=app_runtime_parameters,
         **settings_app_infra.app_source_args,
@@ -181,7 +182,7 @@ if settings_main.core.application_type == settings_main.ApplicationType.DIY:
         source_version_id=application_source.version_id,
         use_case_ids=[use_case.id],
     )
-elif settings_main.core.application_type == settings_main.ApplicationType.DR:
+elif settings_main.core.application_type == ApplicationType.DR:
     qa_application = datarobot.QaApplication(  # type: ignore[assignment]
         resource_name=settings_app_infra.app_resource_name,
         name=f"Guarded RAG Assistant [{settings_main.project_name}]",

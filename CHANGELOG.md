@@ -5,8 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.1.15] - 2024-12-04
 
+### Changed
+- update pulumi-datarobot to >=0.4.5
+- add pyproject.toml to store lint and test configuration
+- update programming language markdown in README
+- Give overview of assets in README 
+- Move type declarations out of infra.settings_main into docsassist.schema
+
+### Added
+- add context tracing to this recipe.
+
+## [0.1.14] - 2024-11-18
+- ring release/10.2 in sync with main
+
+## [0.1.13] - 2024-11-18
+
+### Changed
+- improvements to the README
+
+### Fixed
+- Address trailing comments in quickstart
+- Added feature flag requirement
+  
 ## [0.1.12] - 2024-11-12
 
 ### Changed

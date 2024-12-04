@@ -14,15 +14,9 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Optional, Tuple, Type
+from typing import Optional
 
-from pydantic import Field
-from pydantic_settings import (
-    BaseSettings,
-    PydanticBaseSettingsSource,
-    SettingsConfigDict,
-)
+from docsassist.schema import ApplicationType, CoreSettings, RAGType
 
 from .common.globals import (
     GlobalPredictionEnvironmentPlatforms,
@@ -33,50 +27,6 @@ from .common.schema import (
     UseCaseArgs,
 )
 from .common.stack import get_stack
-
-
-class RAGType(str, Enum):
-    DIY = "diy"
-    DR = "dr"
-
-
-class ApplicationType(str, Enum):
-    DIY = "diy"
-    DR = "dr"
-
-
-class CoreSettings(BaseSettings):
-    """Schema for core settings that can also be overridden by environment variables
-
-    e.g. for running automated tests.
-    """
-
-    rag_documents: str = Field(
-        description="Local path to zip file of pdf, txt, docx, md files to use with RAG",
-    )
-    rag_type: RAGType = Field(
-        description="Whether to use DR RAG chunking, vectorization, retrieval, or user-provided (DIY)",
-    )
-    application_type: ApplicationType = Field(
-        description="Whether to use the default DR QA frontend or a user-provided frontend (DIY)",
-    )
-
-    model_config = SettingsConfigDict(env_prefix="MAIN_", case_sensitive=False)
-
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: Type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> Tuple[PydanticBaseSettingsSource, ...]:
-        return (
-            env_settings,
-            init_settings,
-        )
-
 
 project_name = get_stack()
 
