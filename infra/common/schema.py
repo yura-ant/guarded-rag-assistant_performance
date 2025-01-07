@@ -24,7 +24,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .globals import (
     GlobalGuardrailTemplateName,
-    GlobalLLM,
     GlobalPredictionEnvironmentPlatforms,
 )
 
@@ -164,7 +163,7 @@ class LLMBlueprintArgs(BaseModel):
     resource_name: str
     name: str | None = None
     llm_settings: LLMSettings
-    llm_id: GlobalLLM
+    llm_id: str
     vector_database_settings: VectorDatabaseSettings
 
 

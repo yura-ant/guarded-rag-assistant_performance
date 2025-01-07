@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## [0.1.16] - 2025-01-06
+
+### Added
+- RAG deployment now added to the Use Case
+- Add customization instructions to the README about system prompts
+- Update safe_dump to support unicode
+
+ 
+### Changed
+- More detailed .env.template
+- Change of LLM single code change
+- More prominent LLM setting
+- pulumi-datarobot bumped to 0.5.3
+- renamed settings_rag to settings_generative
+- Instructions to change the LLM in Readme adjusted to the new process
+- Added python 3.9+ requirement to README
+- quickstart now asks you to change the default project name
+- quickstart now prints the application URL
+- Better exception handling around credential validation
+
+### Fixed
+- quickstart.py now supports multiline values correctly
+- Custom model test works correctly again 
+
+### Added
+- Support for AWS Credential type and AWS-based LLM blueprints
+- Full testing of the LLM credentials before start
+
 ## [0.1.15] - 2024-12-04
 
 ### Changed
@@ -16,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - add context tracing to this recipe.
+
+### Removed
+- Grader deployment previously included for leveraging predictive models but never fully implemented
 
 ## [0.1.14] - 2024-11-18
 - ring release/10.2 in sync with main

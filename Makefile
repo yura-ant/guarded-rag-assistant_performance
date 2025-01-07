@@ -18,7 +18,7 @@ fix-lint:
 lint:
 	ruff format --check .
 	ruff check .
-	mypy .
+	mypy --install-types --non-interactive .
 
 check-all:
 	check-licences

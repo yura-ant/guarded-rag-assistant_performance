@@ -20,26 +20,26 @@ import pulumi_datarobot as datarobot
 
 from docsassist.deployments import (
     app_env_name,
-    grading_deployment_env_name,
     rag_deployment_env_name,
 )
 from docsassist.i18n import LocaleSettings
 from docsassist.schema import ApplicationType, RAGType
 from infra import (
     settings_app_infra,
-    settings_grader,
+    settings_generative,
     settings_keyword_guard,
     settings_main,
-    settings_rag,
 )
 from infra.common.feature_flags import check_feature_flags
 from infra.common.papermill import run_notebook
 from infra.common.urls import get_deployment_url
 from infra.components.custom_model_deployment import CustomModelDeployment
-from infra.components.dr_credential import DRCredential
+from infra.components.dr_llm_credential import (
+    get_credential_runtime_parameter_values,
+    get_credentials,
+)
 from infra.components.rag_custom_model import RAGCustomModel
 from infra.settings_global_guardrails import global_guardrails
-from infra.settings_llm_credential import credential, credential_args
 
 LocaleSettings().setup_locale()
 
@@ -65,11 +65,12 @@ else:
         settings_main.default_prediction_server_id,
     )
 
-llm_credential = DRCredential(
-    resource_name=f"Generic LLM Credential [{settings_main.project_name}]",
-    credential=credential,
-    credential_args=credential_args,
+credentials = get_credentials(settings_generative.LLM)
+
+credential_runtime_parameter_values = get_credential_runtime_parameter_values(
+    credentials=credentials
 )
+
 
 keyword_guard_deployment = CustomModelDeployment(
     resource_name=f"Keyword Guard [{settings_main.project_name}]",
@@ -113,33 +114,38 @@ if settings_main.core.rag_type == RAGType.DR:
     rag_custom_model = RAGCustomModel(
         resource_name=f"Guarded RAG Prep [{settings_main.project_name}]",
         use_case=use_case,
-        dataset_args=settings_rag.dataset_args,
-        playground_args=settings_rag.playground_args,
-        vector_database_args=settings_rag.vector_database_args,
-        llm_blueprint_args=settings_rag.llm_blueprint_args,
-        runtime_parameter_values=llm_credential.runtime_parameter_values,
+        dataset_args=settings_generative.dataset_args,
+        playground_args=settings_generative.playground_args,
+        vector_database_args=settings_generative.vector_database_args,
+        llm_blueprint_args=settings_generative.llm_blueprint_args,
+        runtime_parameter_values=credential_runtime_parameter_values,
         guard_configurations=guard_configurations,
-        custom_model_args=settings_rag.custom_model_args,
+        custom_model_args=settings_generative.custom_model_args,
     )
 elif settings_main.core.rag_type == RAGType.DIY:
     if not all(
-        [path.exists() for path in settings_rag.diy_rag_nb_output.model_dump().values()]
+        [
+            path.exists()
+            for path in settings_generative.diy_rag_nb_output.model_dump().values()
+        ]
     ):
         pulumi.info("Executing doc chunking + vdb building notebook...")
-        run_notebook(settings_rag.diy_rag_nb)
+        run_notebook(settings_generative.diy_rag_nb)
     else:
         pulumi.info(
-            f"Using existing outputs from build_rag.ipynb in '{settings_rag.diy_rag_deployment_path}'"
+            f"Using existing outputs from build_rag.ipynb in '{settings_generative.diy_rag_deployment_path}'"
         )
 
     rag_custom_model = datarobot.CustomModel(  # type: ignore[assignment]
-        files=settings_rag.get_diy_rag_files(
-            runtime_parameter_values=llm_credential.runtime_parameter_values,
+        files=settings_generative.get_diy_rag_files(
+            runtime_parameter_values=credential_runtime_parameter_values,
         ),
-        runtime_parameter_values=llm_credential.runtime_parameter_values,
+        runtime_parameter_values=credential_runtime_parameter_values,
         guard_configurations=guard_configurations,
         use_case_ids=[use_case.id],
-        **settings_rag.custom_model_args.model_dump(mode="json", exclude_none=True),
+        **settings_generative.custom_model_args.model_dump(
+            mode="json", exclude_none=True
+        ),
     )
 else:
     raise NotImplementedError(f"Unknown RAG type: {settings_main.core.rag_type}")
@@ -147,25 +153,15 @@ else:
 rag_deployment = CustomModelDeployment(
     resource_name=f"Guarded RAG Deploy [{settings_main.project_name}]",
     custom_model_version_id=rag_custom_model.version_id,
-    registered_model_args=settings_rag.registered_model_args,
+    registered_model_args=settings_generative.registered_model_args,
     prediction_environment=prediction_environment,
-    deployment_args=settings_rag.deployment_args,
-)
-
-grading_deployment = CustomModelDeployment(
-    resource_name=f"Grading [{settings_main.project_name}]",
-    custom_model_args=settings_grader.custom_model_args,
-    registered_model_args=settings_grader.registered_model_args,
-    prediction_environment=prediction_environment,
-    deployment_args=settings_grader.deployment_args,
+    deployment_args=settings_generative.deployment_args,
+    use_case_ids=[use_case.id],
 )
 
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key=rag_deployment_env_name, type="deployment", value=rag_deployment.id
-    ),
-    datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key=grading_deployment_env_name, type="deployment", value=grading_deployment.id
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="APP_LOCALE", type="string", value=LocaleSettings().app_locale
@@ -197,7 +193,6 @@ else:
 qa_application.id.apply(settings_app_infra.ensure_app_settings)
 
 
-pulumi.export(grading_deployment_env_name, grading_deployment.id)
 pulumi.export(rag_deployment_env_name, rag_deployment.id)
 pulumi.export(app_env_name, qa_application.id)
 for deployment, config in zip(global_guard_deployments, global_guardrails):
@@ -205,12 +200,9 @@ for deployment, config in zip(global_guard_deployments, global_guardrails):
         config.deployment_args.resource_name,
         deployment.id.apply(get_deployment_url),
     )
+
 pulumi.export(
-    settings_grader.deployment_args.resource_name,
-    grading_deployment.id.apply(get_deployment_url),
-)
-pulumi.export(
-    settings_rag.deployment_args.resource_name,
+    settings_generative.deployment_args.resource_name,
     rag_deployment.id.apply(get_deployment_url),
 )
 pulumi.export(

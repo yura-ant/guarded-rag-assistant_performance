@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 from typing import Optional, Sequence
 
 import pulumi
@@ -27,7 +29,7 @@ class CustomModelDeployment(pulumi.ComponentResource):
         registered_model_args: RegisteredModelArgs,
         prediction_environment: datarobot.PredictionEnvironment,
         deployment_args: DeploymentArgs,
-        use_case_ids: Optional[Sequence[str]] = None,
+        use_case_ids: Optional[Sequence[pulumi.Output[str]] | str] = None,
         custom_model_version_id: Optional[pulumi.Input[str]] = None,
         custom_model_args: Optional[CustomModelArgs] = None,
         opts: Optional[pulumi.ResourceOptions] = None,

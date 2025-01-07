@@ -25,8 +25,8 @@ from pydantic import BaseModel
 
 from docsassist.i18n import gettext
 from docsassist.schema import TARGET_COLUMN_NAME, RAGModelSettings, RAGType
+from infra.common.globals import GlobalLLM
 
-from .common.globals import GlobalLLM
 from .common.schema import (
     ChunkingParameters,
     CustomModelArgs,
@@ -45,6 +45,9 @@ from .settings_main import (
     project_name,
     runtime_environment_moderations,
 )
+
+LLM = GlobalLLM.AZURE_OPENAI_GPT_4_O
+
 
 custom_model_args = CustomModelArgs(
     resource_name=f"Guarded RAG Custom Model [{project_name}]",
@@ -98,18 +101,18 @@ if core.rag_type == RAGType.DR:
         ),
     )
 
-    llm_blueprint_args = LLMBlueprintArgs(
-        resource_name=f"Guarded RAG LLM Blueprint [{project_name}]",
-        llm_id=GlobalLLM.AZURE_OPENAI_GPT_3_5_TURBO,
-        llm_settings=LLMSettings(
-            max_completion_length=512,
-            system_prompt=textwrap.dedent(
-                gettext("""\
+    system_prompt = """\
                 Use the following pieces of context to answer the user's question.
                 If you don't know the answer, just say that you don't know, don't try to make up an answer.
                 ----------------
-                {context}""")
-            ),
+                {context}"""
+
+    llm_blueprint_args = LLMBlueprintArgs(
+        resource_name=f"Guarded RAG LLM Blueprint [{project_name}]",
+        llm_id=LLM.name,
+        llm_settings=LLMSettings(
+            max_completion_length=512,
+            system_prompt=textwrap.dedent(gettext(system_prompt)),
         ),
         vector_database_settings=VectorDatabaseSettings(
             max_documents_retrieved_per_prompt=10,

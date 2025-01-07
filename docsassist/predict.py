@@ -27,10 +27,8 @@ from datarobot_predict.deployment import PredictionResult, predict
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 from pydantic import ValidationError
 
-from docsassist.deployments import GradingDeployment, RAGDeployment  # noqa: E402
+from docsassist.deployments import RAGDeployment  # noqa: E402
 from docsassist.schema import (  # noqa: E402
-    Grade,
-    GraderOutput,
     RAGInput,
     RAGOutput,
 )
@@ -39,7 +37,6 @@ logger = logging.getLogger(__name__)
 
 try:
     rag_deployment_id = RAGDeployment().id
-    grading_deployment_id = GradingDeployment().id
 except ValidationError as e:
     raise ValueError(
         (
@@ -87,33 +84,6 @@ def _predict_with_retry(
             else:
                 # If it's a different ServerError, re-raise it
                 raise
-
-
-# TODO: validate interface schemas are cleanly serializable
-def predict_grade(data: RAGOutput, association_id: str) -> GraderOutput:
-    grading_deployment_info = _get_deployment_info(grading_deployment_id)
-    grading_deployment = grading_deployment_info.deployment
-    target_name = grading_deployment_info.target_name
-
-    df = data.to_dataframe()
-
-    df.rename(columns={"question": "prompt", "answer": "response"}, inplace=True)
-
-    df["association_id"] = association_id
-    response_df = _predict_with_retry(grading_deployment, data_frame=df).dataframe
-
-    response_dict = response_df.to_dict(orient="records")[0]
-    response_dict["__target"] = target_name
-    response = GraderOutput.model_validate(response_dict)
-
-    return response
-
-
-def submit_grade(grade: Grade, association_id: str) -> None:
-    data = [{"association_id": association_id, "actual_value": grade}]
-
-    deployment = dr.Deployment.get(grading_deployment_id)  # type: ignore[attr-defined]
-    deployment.submit_actuals(data)
 
 
 def get_rag_completion(

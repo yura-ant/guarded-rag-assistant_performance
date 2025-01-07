@@ -32,35 +32,15 @@ msgstr ""
 "                ----------------\n"
 "                {context}"
 
-msgid "**Confidence Scores:**"
-msgstr "**信頼度スコア：**"
 
 msgid "**Content:**"
 msgstr "**内容：**"
 
-msgid "**Correct**: the response sufficiently answers the question."
-msgstr "正確：その回答は、質問に十分に答えています。"
-
-msgid "**Digress**: the response includes irrelevant information or is not concise."
-msgstr "**逸脱**：回答に無関係な情報が含まれているか、回答が簡潔ではありません。"
-
 msgid "**How would you rate this response?**"
 msgstr "**この回答について、評価をお願いいたします。**"
 
-msgid "**Incomplete**: the response does not fully answer the question."
-msgstr "**不完全**：その回答は、質問に十分に答えていません。"
-
-msgid "**Incorrect**: the response \"hallucinates\" or is the wrong answer to the question."
-msgstr "**不正確**：「ハルシネーション」。間違った回答です。"
-
-msgid "**No Answer**: the response claims it cannot or will not answer the question."
-msgstr "**無回答**：その質問には答えられない、あるいは答えないと回答しています。"
-
 msgid "**Reference {0}:**"
 msgstr "**リファレンス {0}：**"
-
-msgid "**Response Grade**: {0}"
-msgstr "**回答に対する評価**：{0}"
 
 msgid "**Source:** {0}"
 msgstr "**ソース：**{0}"
@@ -70,12 +50,6 @@ msgstr "アシスタント"
 
 msgid "Conversation History"
 msgstr "会話履歴"
-
-msgid "Correct"
-msgstr "正確"
-
-msgid "Digress"
-msgstr "逸脱"
 
 msgid "Getting AI response..."
 msgstr "AIの回答を取得しています..."
@@ -91,18 +65,6 @@ msgstr "この質問に有害な表現が含まれています。質問を言い
 
 msgid "I'm sorry, but I don't have enough information to answer your question. Can you please provide more context or clarify your question?"
 msgstr "申し訳ありませんが、この質問に回答するのに十分な情報がありません。もう少し詳しく説明していただくか、質問を明確にしていただけますか？"
-
-msgid "Incomplete"
-msgstr "不完全"
-
-msgid "Incorrect"
-msgstr "不正確"
-
-msgid "No Answer"
-msgstr "無回答"
-
-msgid "Predicting grade..."
-msgstr "評価を予測しています..."
 
 msgid "Show Citations"
 msgstr "引用を表示"

@@ -18,7 +18,6 @@ import base64
 import logging
 import os
 import sys
-from typing import get_args
 
 import datarobot as dr
 import streamlit as st
@@ -36,8 +35,6 @@ sys.path.append("../")
 from docsassist import predict
 from docsassist.i18n import gettext
 from docsassist.schema import (
-    Grade,
-    GraderOutput,
     RAGOutput,
 )
 
@@ -73,9 +70,6 @@ if "messages" not in st.session_state:
 if "response" not in st.session_state:
     st.session_state.response = {}
 
-if "confidence" not in st.session_state:
-    st.session_state.confidence = {}
-
 
 def render_svg(svg: str) -> None:
     """Renders the given svg string."""
@@ -109,20 +103,8 @@ def render_conversation_history(container: DeltaGenerator) -> None:
     st.markdown("---")
 
 
-def render_answer_and_citations(
-    container: DeltaGenerator, response: RAGOutput, grade_output: GraderOutput
-) -> None:
+def render_answer_and_citations(container: DeltaGenerator, response: RAGOutput) -> None:
     render_message(container, response.completion, is_user=False)
-
-    if app_settings.render_grading_model_scores:
-        st.header(
-            gettext("**Response Grade**: {0}").format(gettext(grade_output.grade))
-        )
-        st.markdown(gettext("**Confidence Scores:**"))
-        scores = ", ".join(
-            f"{gettext(k)}: {v:.1%}" for k, v in grade_output.class_scores.items()
-        )
-        st.markdown(scores)
 
     with st.expander(gettext("Show Citations")):
         for i, doc in enumerate(response.references):
@@ -175,55 +157,12 @@ def main() -> None:
             ]
         )
 
-        with st.spinner(gettext("Predicting grade...")):
-            grade_output = predict.predict_grade(response, association_id)
-        st.session_state.confidence = grade_output
-        # display the grade
-        st.write(f"Grades: {grade_output.class_scores}")
-
         st.rerun()
 
     if st.session_state.prompt_sent:
         render_answer_and_citations(
             answer_and_citations_placeholder,
             st.session_state.response,
-            st.session_state.confidence,
-        )
-
-        st.subheader(gettext("**How would you rate this response?**"))
-        cols = st.columns(5)
-        grades = get_args(Grade)
-
-        for col, grade_to_submit in zip(cols, grades):
-            if col.button(
-                label=gettext(grade_to_submit), key=f"button_{grade_to_submit}"
-            ):
-                predict.submit_grade(
-                    grade_to_submit,
-                    st.session_state.association_id,
-                )
-                st.success(gettext("Thank you for your rating!"))
-
-        st.write(
-            gettext("**Correct**: the response sufficiently answers the question.")
-        )
-        st.write(
-            gettext(
-                '**Incorrect**: the response "hallucinates" or is the wrong answer to the question.'
-            )
-        )
-        st.write(
-            gettext("**Incomplete**: the response does not fully answer the question.")
-        )
-        st.write(
-            gettext(
-                "**Digress**: the response includes irrelevant information or is not concise."
-            )
-        )
-        st.write(
-            gettext(
-                "**No Answer**: the response claims it cannot or will not answer the question."
-            )
         )
 
 

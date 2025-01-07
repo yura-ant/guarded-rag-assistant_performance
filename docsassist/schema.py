@@ -17,7 +17,7 @@ from __future__ import annotations
 import math
 import re
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, get_args
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import pandas as pd
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
@@ -38,8 +38,6 @@ class ApplicationType(str, Enum):
     DIY = "diy"
     DR = "dr"
 
-
-Grade = Literal["Correct", "Incorrect", "Incomplete", "Digress", "No Answer"]
 
 PROMPT_COLUMN_NAME: str = "promptText"
 TARGET_COLUMN_NAME: str = "resultText"
@@ -151,48 +149,6 @@ class RAGOutput(BaseModel):
                 input_data[k] = [v]
 
         return pd.DataFrame(input_data)
-
-
-class GraderOutput(BaseModel):
-    grade: Grade
-    class_scores: Dict[Grade, float] = Field(
-        default_factory=dict,
-        description="Dictionary mapping grades to class probabilities",
-    )
-
-    @model_validator(mode="before")
-    def parse_predictions(cls, values: Any) -> Any:
-        if isinstance(values, dict) and "predictions" in values:
-            predictions = values["predictions"]
-        else:
-            predictions = values
-
-        out_dict: dict[str, Any] = {}
-        target_name = values.pop("__target", None)
-
-        if not target_name:
-            raise ValueError("Target name not provided")
-
-        target_column = f"{target_name}_PREDICTION"
-
-        # Parse the grade, ensuring it's a valid Grade enum value
-        grade_value = predictions.get(target_column)
-
-        out_dict["grade"] = grade_value
-
-        class_scores: dict[Grade, float] = {}
-
-        for grade in get_args(Grade):
-            key = f"{target_name}_{grade}_PREDICTION"
-            if key in predictions:
-                class_scores[grade] = float(predictions[key])
-
-        out_dict["class_scores"] = class_scores
-
-        return out_dict
-
-    class Config:
-        extra = "ignore"
 
 
 class CoreSettings(BaseSettings):

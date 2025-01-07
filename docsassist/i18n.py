@@ -114,14 +114,6 @@ def gettext(message: str) -> str:
 
 # This here to ensure that these words are present in the
 # language assets located in ./locale/ja/LC_MESSAGES/base.po/mo
-I18N_GRADES = [
-    gettext_noop("Correct"),
-    gettext_noop("Incorrect"),
-    gettext_noop("Incomplete"),
-    gettext_noop("Digress"),
-    gettext_noop("No Answer"),
-]
-
 I18N_NOINFO = gettext_noop(
     "I'm sorry, but I don't have enough information to answer your question. Can you please provide more context or clarify your question?"
 )

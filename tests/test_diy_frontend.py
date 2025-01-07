@@ -21,13 +21,13 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Callable, get_args
+from typing import Any, Callable
 
 import datarobot as dr
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from docsassist.schema import PROMPT_COLUMN_NAME, Grade
+from docsassist.schema import PROMPT_COLUMN_NAME
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -65,11 +65,6 @@ def cd(new_dir: Path) -> Any:
         yield
     finally:
         os.chdir(prev_dir)
-
-
-@pytest.fixture
-def grades() -> tuple[Any, ...]:
-    return get_args(Grade)
 
 
 @pytest.fixture
@@ -137,16 +132,3 @@ def test_reports_citations(app_post_prompt: AppTest) -> None:
         assert f"**Reference {i+1}:**" in citation_markdown
 
     assert len(references) > 0
-
-
-def test_reports_grade(app_post_prompt: AppTest, grades: tuple[Any, ...]) -> None:
-    grade = app_post_prompt.header[0].value
-    assert grade.replace("**Response Grade**: ", "") in grades
-
-
-def test_submit_feedback(app_post_prompt: AppTest, grades: tuple[Any, ...]) -> None:
-    at = app_post_prompt
-    at.button(f"button_{grades[0]}").click().run(timeout=30)
-
-    assert len(at.button) == len(grades)
-    assert at.success[0].value == "Thank you for your rating!"

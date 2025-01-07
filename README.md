@@ -24,12 +24,13 @@ In addition to creating a hosted, shareable user interface, the guarded RAG assi
 4. [Make changes](#make-changes)
    - [Change the RAG documents](#change-the-rag-documents)
    - [Change the LLM](#change-the-llm)
+   - [Change the RAG prompt](#change-the-RAG-prompt)
    - [Custom front-end](#fully-custom-front-end)
    - [Custom RAG logic](#fully-custom-rag-chunking-vectorization-and-retrieval)
 5. [Share results](#share-results)
-6. [Delete all resources](#delete-all-provisioned-resources)
+6. [Delete all provisioned resources](#delete-all-provisioned-resources)
 7. [Setup for advanced users](#setup-for-advanced-users)
-8. [Data privacy](#data-privacy)
+8. [Data Privacy](#data-privacy)
 
 
 ## Setup
@@ -53,24 +54,13 @@ In addition to creating a hosted, shareable user interface, the guarded RAG assi
 3. Rename the file `.env.template` to `.env` in the root directory of the repo and populate your credentials.
    This template is pre-configured to use an Azure OpenAI endpoint. If you wish to use a different LLM provider, modifications to the code will be [necessary](#change-the-llm).
 
-   ```bash
-   DATAROBOT_API_TOKEN=...
-   DATAROBOT_ENDPOINT=...  # e.g. https://app.datarobot.com/api/v2
-   OPENAI_API_KEY=...
-   OPENAI_API_VERSION=...  # e.g. 2024-02-01
-   OPENAI_API_BASE=...  # e.g. https://your_org.openai.azure.com/
-   OPENAI_API_DEPLOYMENT_ID=...  # e.g. gpt-4
-   PULUMI_CONFIG_PASSPHRASE=...  # required, choose your own alphanumeric passphrase to be used for encrypting pulumi config
-   ```
-   Use the following resources to locate the required credentials:
-   - **DataRobot API token**: Refer to the *Create a DataRobot API Key* section of the [DataRobot API Quickstart guide](https://docs.datarobot.com/en/docs/api/api-quickstart/index.html#create-a-datarobot-api-key).
-   - **DataRobot endpoint**: Refer to the *Retrieve the API Endpoint* section of the [DataRobot API Quickstart guide](https://docs.datarobot.com/en/docs/api/api-quickstart/index.html#retrieve-the-api-endpoint).
-   - **LLM endpoint and API key**: Refer to the [Azure OpenAI documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython-new&pivots=programming-language-python#retrieve-key-and-endpoint).
+   Please refer to the documentation inside `.env.template`
 
 4. In a terminal, run:
    ```bash
    python quickstart.py YOUR_PROJECT_NAME  # Windows users may have to use `py` instead of `python`
    ```
+   Python 3.9+ is required.
 
 Advanced users desiring control over virtual environment creation, dependency installation, environment variable setup,
 and `pulumi` invocation see [the advanced setup instructions](#setup-for-advanced-users).
@@ -125,35 +115,19 @@ Each template provides an end-to-end AI architecture, from raw inputs to deploye
 
 ### Change the LLM
 
-1. Modify your `.env`.
-   ```bash
-   GOOGLE_SERVICE_ACCOUNT=''  # insert json service key between the single quotes, newlines are OK
-   GOOGLE_REGION=...  # default is 'us-west1'
-   ```
-2. Update your environment and install `google-auth`.
-   ```bash
-   source set_env.sh  # On windows use `set_env.bat`
-   pip install google-auth
-   ```
-3. Update the credential type to be provisioned in `infra/settings_llm_credential.py`.
-   ```python
-   # credential = AzureOpenAICredentials()
-   # credential.test()
-   from docsassist.credentials import GoogleLLMCredentials
-   credential = GoogleLLMCredentials()
-   credential.test('gemini-1.5-flash-001')  # select a model for validating the credential
-   ```
-4. Configure a Gemini blueprint to be provisioned in `infra/settings_rag.py`.
-   ```python
-   # llm_id=GlobalLLM.AZURE_OPENAI_GPT_3_5_TURBO,
-   llm_id=GlobalLLM.GOOGLE_GEMINI_1_5_FLASH,
-   ```
-5. Run `pulumi up` to update your stack.
-   ```bash
-   source set_env.sh  # On windows use `set_env.bat`
-   pulumi up
-   ```
+1. Modify the `LLM` setting in `infra/settings_generative.py` by changing `LLM=GlobalLLM.AZURE_OPENAI_GPT_4_O` to any other LLM from the `GlobalLLM` object.
+2. Provide the required credentials in `.env` dependent on your choice.
+3. Run `pulumi up` to update your stack (Or rerun your quickstart).
+      ```bash
+      source set_env.sh  # On windows use `set_env.bat`
+      pulumi up
+      ```
    
+### Change the RAG prompt
+
+1. Modify the `system_prompt` variable in `infra/settings_generative.py` with your desired prompt. 
+2. If using [fully custom RAG logic](#fully-custom-rag-chunking-vectorization-and-retrieval), instead please change the `stuff_prompt` variable in `notebooks/build_rag.ipynb`.
+
 ### Fully custom front-end
 
 1. Edit `infra/settings_main.py` and update `application_type` to `ApplicationType.DIY`

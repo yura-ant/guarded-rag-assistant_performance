@@ -18,21 +18,15 @@ import datetime as dt
 import uuid
 
 import datarobot as dr
-import pandas as pd
 import pytest
 
-from docsassist.deployments import GradingDeployment, RAGDeployment
+from docsassist.deployments import RAGDeployment
 from docsassist.schema import PROMPT_COLUMN_NAME
 
 
 @pytest.fixture
 def rag_deployment_id():
     return RAGDeployment().id
-
-
-@pytest.fixture
-def grading_deployment_id():
-    return GradingDeployment().id
 
 
 def generate_association_id():
@@ -43,18 +37,6 @@ def make_prediction_and_get_answer(make_prediction, deployment_id, input_data):
     response_dict = make_prediction(input_data, deployment_id)
     deployment = dr.Deployment.get(deployment_id)
     return response_dict[f"{deployment.model['target_name']}_PREDICTION"]
-
-
-def test_grade_deployment_prediction(pulumi_up, make_prediction, grading_deployment_id):
-    input_df = pd.DataFrame({"prompt": ["tell me about DataRobot"]})
-    input_df["association_id"] = generate_association_id()
-
-    grade_output = make_prediction(
-        input_df.to_dict(orient="records"), grading_deployment_id
-    )
-    grade_df = pd.DataFrame([grade_output])
-
-    assert len(grade_df.index) > 0
 
 
 def test_guard_deployment_prediction(pulumi_up, make_prediction, rag_deployment_id):

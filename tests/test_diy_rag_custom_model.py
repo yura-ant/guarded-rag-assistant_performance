@@ -35,9 +35,9 @@ try:
 except ImportError:
     pass
 
+
 sys.path.append("../")
 from docsassist.schema import RAGInput
-from infra.components.dr_credential import DRCredential
 
 
 @pytest.fixture
@@ -48,32 +48,6 @@ def drum_installed():
         pytest.skip(
             "DIY RAG custom model tests requires datarobot_drum to be installed."
         )
-
-
-class ExtendedDRCredential(DRCredential):
-    def __init__(self, *args, **kwargs):
-        # Store all arguments for later inspection
-        self._init_kwargs = kwargs
-
-        # Call the original __init__ method
-        super().__init__(*args, **kwargs)
-
-    def get_init_kwargs(self) -> Dict[str, Any]:
-        """Return the arguments passed to __init__"""
-        return self._init_kwargs
-
-
-class ExtendedCustomModel(datarobot.CustomModel):
-    def __init__(self, *args, **kwargs):
-        # Store all arguments for later inspection
-        self._init_kwargs = kwargs
-
-        # Call the original __init__ method
-        super().__init__(*args, **kwargs)
-
-    def get_init_kwargs(self) -> Dict[str, Any]:
-        """Return the arguments passed to __init__"""
-        return self._init_kwargs
 
 
 @pytest.fixture
@@ -129,8 +103,34 @@ def test_input3(output_dir: Path) -> Path:
 
 
 @pytest.fixture
-def rag_custom_model(code_dir) -> ExtendedCustomModel:
-    from infra import settings_rag
+def rag_custom_model(code_dir) -> datarobot.CustomModel:
+    from infra.components.dr_llm_credential import DRCredentials
+
+    class ExtendedDRCredential(DRCredentials):
+        def __init__(self, *args, **kwargs):
+            # Store all arguments for later inspection
+            self._init_kwargs = kwargs
+
+            # Call the original __init__ method
+            super().__init__(*args, **kwargs)
+
+        def get_init_kwargs(self) -> Dict[str, Any]:
+            """Return the arguments passed to __init__"""
+            return self._init_kwargs
+
+    class ExtendedCustomModel(datarobot.CustomModel):
+        def __init__(self, *args, **kwargs):
+            # Store all arguments for later inspection
+            self._init_kwargs = kwargs
+
+            # Call the original __init__ method
+            super().__init__(*args, **kwargs)
+
+        def get_init_kwargs(self) -> Dict[str, Any]:
+            """Return the arguments passed to __init__"""
+            return self._init_kwargs
+
+    from infra import settings_generative
     from infra.settings_llm_credential import credential, credential_args
 
     llm_credential = ExtendedDRCredential(
@@ -138,14 +138,16 @@ def rag_custom_model(code_dir) -> ExtendedCustomModel:
         credential=credential,
         credential_args=credential_args,
     )
-    diy_rag_files = settings_rag.get_diy_rag_files(
+    diy_rag_files = settings_generative.get_diy_rag_files(
         runtime_parameter_values=llm_credential.runtime_parameter_values,
     )
 
     rag_custom_model = ExtendedCustomModel(
         files=diy_rag_files,
         runtime_parameter_values=llm_credential.runtime_parameter_values,
-        **settings_rag.custom_model_args.model_dump(mode="json", exclude_none=True),
+        **settings_generative.custom_model_args.model_dump(
+            mode="json", exclude_none=True
+        ),
     )
     return rag_custom_model
 
@@ -156,7 +158,10 @@ def run_drum(
     output: str,
     #  runtime_params_file: str
 ):
-    from infra.settings_llm_credential import credential
+    from infra.components.dr_llm_credential import get_credentials
+    from infra.settings_generative import LLM
+
+    credential = get_credentials(LLM)
 
     with DrumRuntime() as runtime:
         options = Namespace(
@@ -220,7 +225,7 @@ def test_diy_rag_custom_model(
     rag_mode: str,
     drum_installed,
 ) -> None:
-    from infra.settings_rag import custom_model_args
+    from infra.settings_generative import custom_model_args
 
     if rag_mode != "diy":
         pytest.skip("Skipping DIY RAG custom model tests")
