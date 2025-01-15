@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
-
 import datarobot as dr
 import pulumi
 
 from docsassist.i18n import LanguageCode, LocaleSettings
 from infra.common.globals import GlobalRuntimeEnvironment
 from infra.common.schema import ApplicationSourceArgs
-from infra.settings_main import project_name
+from infra.settings_main import PROJECT_ROOT, project_name
 
 
 def ensure_app_settings(app_id: str) -> None:
@@ -34,7 +32,7 @@ def ensure_app_settings(app_id: str) -> None:
         pulumi.warn("Could not enable autostopping for the Application")
 
 
-_application_path = Path("frontend/")
+_application_path = PROJECT_ROOT / "frontend"
 
 
 source_files = [
@@ -43,13 +41,15 @@ source_files = [
     if f.is_file()
 ]
 
+docsassist_path = PROJECT_ROOT / "docsassist"
+
 source_files.extend(
     [
-        ("docsassist/__init__.py", "docsassist/__init__.py"),
-        ("docsassist/deployments.py", "docsassist/deployments.py"),
-        ("docsassist/predict.py", "docsassist/predict.py"),
-        ("docsassist/schema.py", "docsassist/schema.py"),
-        ("docsassist/i18n.py", "docsassist/i18n.py"),
+        (str(docsassist_path / "__init__.py"), "docsassist/__init__.py"),
+        (str(docsassist_path / "deployments.py"), "docsassist/deployments.py"),
+        (str(docsassist_path / "predict.py"), "docsassist/predict.py"),
+        (str(docsassist_path / "schema.py"), "docsassist/schema.py"),
+        (str(docsassist_path / "i18n.py"), "docsassist/i18n.py"),
     ]
 )
 
@@ -58,7 +58,13 @@ application_locale = LocaleSettings().app_locale
 if application_locale != LanguageCode.EN:
     source_files.append(
         (
-            f"docsassist/locale/{application_locale}/LC_MESSAGES/base.mo",
+            str(
+                docsassist_path
+                / "locale"
+                / application_locale
+                / "LC_MESSAGES"
+                / "base.mo"
+            ),
             f"docsassist/locale/{application_locale}/LC_MESSAGES/base.mo",
         )
     )

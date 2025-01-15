@@ -1,6 +1,7 @@
 name: guarded-rag-assistant
 runtime:
   name: python
+main: infra
 description: Guarded Rag Assistant
 config:
   pulumi:tags:

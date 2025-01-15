@@ -14,9 +14,12 @@
 
 import os
 import pathlib
+import sys
 
 import pulumi
 import pulumi_datarobot as datarobot
+
+sys.path.append("..")
 
 from docsassist.deployments import (
     app_env_name,
@@ -43,7 +46,7 @@ from infra.settings_global_guardrails import global_guardrails
 
 LocaleSettings().setup_locale()
 
-check_feature_flags(pathlib.Path("infra/feature_flag_requirements.yaml"))
+check_feature_flags(pathlib.Path("feature_flag_requirements.yaml"))
 
 if "DATAROBOT_DEFAULT_USE_CASE" in os.environ:
     use_case_id = os.environ["DATAROBOT_DEFAULT_USE_CASE"]

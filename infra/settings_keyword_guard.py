@@ -33,6 +33,7 @@ from .common.schema import (
     Stage,
 )
 from .settings_main import (
+    PROJECT_ROOT,
     default_prediction_server_id,
     project_name,
     runtime_environment_moderations,
@@ -76,7 +77,7 @@ custom_model_args = CustomModelArgs(
             value="guardrailText",
         ),
     ],
-    folder_path="deployment_keyword_guard",
+    folder_path=str(PROJECT_ROOT / "deployment_keyword_guard"),
 )
 
 registered_model_args = RegisteredModelArgs(
@@ -104,11 +105,13 @@ custom_model_guard_configuration_args = CustomModelGuardConfigurationArgs(
             comparator=GuardConditionComparator.EQUALS,
         ).model_dump_json(),
         message=textwrap.dedent(
-            gettext("""\
+            gettext(
+                """\
                 I have detected you are asking about another vendor. I hear they have great products, but I think DataRobot is the best.
 
                 For information on integrations, please check our website here:
-                https://docs.datarobot.com/en/docs/more-info/how-to/index.html""")
+                https://docs.datarobot.com/en/docs/more-info/how-to/index.html"""
+            )
         ),
     ),
     input_column_name="guardrailText",

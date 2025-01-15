@@ -40,6 +40,7 @@ from .common.schema import (
     VectorDatabaseSettings,
 )
 from .settings_main import (
+    PROJECT_ROOT,
     core,
     default_prediction_server_id,
     project_name,
@@ -129,8 +130,8 @@ elif core.rag_type == RAGType.DIY:
         embedding_model: pathlib.Path
         rag_settings: pathlib.Path
 
-    diy_rag_deployment_path = pathlib.Path("deployment_diy_rag/")
-    diy_rag_nb = pathlib.Path("notebooks/build_rag.ipynb")
+    diy_rag_deployment_path = PROJECT_ROOT / "deployment_diy_rag"
+    diy_rag_nb = PROJECT_ROOT / "notebooks" / "build_rag.ipynb"
     diy_rag_nb_output = DIYRAGNotebookOutput(
         vdb=diy_rag_deployment_path / "faiss_db",
         embedding_model=diy_rag_deployment_path / "sentencetransformers",
@@ -162,16 +163,15 @@ elif core.rag_type == RAGType.DIY:
             )
             f.write(runtime_parameters)
 
+        docsassist_path = PROJECT_ROOT / "docsassist"
+
         diy_files = [
             (str(f), str(f.relative_to(diy_rag_deployment_path)))
             for f in diy_rag_deployment_path.glob("**/*")
             if f.is_file() and f.name not in ("README.md", "model-metadata.yaml.jinja")
         ] + [
-            (
-                "docsassist/__init__.py",
-                "docsassist/__init__.py",
-            ),
-            ("docsassist/schema.py", "docsassist/schema.py"),
-            ("docsassist/credentials.py", "docsassist/credentials.py"),
+            (str(docsassist_path / "__init__.py"), "docsassist/__init__.py"),
+            (str(docsassist_path / "schema.py"), "docsassist/schema.py"),
+            (str(docsassist_path / "credentials.py"), "docsassist/credentials.py"),
         ]
         return diy_files
