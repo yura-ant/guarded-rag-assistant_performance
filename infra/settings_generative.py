@@ -75,7 +75,7 @@ deployment_args = DeploymentArgs(
     predictions_settings=(
         None
         if default_prediction_server_id
-        else datarobot.DeploymentPredictionsSettingsArgs(min_computes=0, max_computes=1)
+        else datarobot.DeploymentPredictionsSettingsArgs(min_computes=4, max_computes=4)
     ),
     predictions_data_collection_settings=datarobot.DeploymentPredictionsDataCollectionSettingsArgs(
         enabled=True,
